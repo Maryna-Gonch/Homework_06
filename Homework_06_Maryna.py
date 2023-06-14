@@ -27,7 +27,7 @@ def get_categories(path: Path):
     for cat, exts in CATEGORIES.items():
         if ext in exts:
             return cat
-    return "Other"
+    return "other"
 
 
 def sort_folder(path: Path):
@@ -39,7 +39,7 @@ def sort_folder(path: Path):
 
 def delete_emppty_folders(path):
     for item in path.glob("**/*"):
-        if item.is_dir() and (not item.name in CATEGORIES.keys()) and (item.name != "Other"):
+        if item.is_dir() and (not item.name in CATEGORIES.keys()) and (item.name != "other"):
             shutil.rmtree(path.joinpath(item))
 
 
@@ -52,6 +52,26 @@ def upack_archive(path):
             print(f"Can't unpack {item.name}")
 
 
+def print_result(path):
+    for cat in ("images", "documents", "audio", "video", "archives"):
+        print(f"FIle of category {cat}:")
+        lst = []
+        if path.joinpath(cat).exists():
+            for item in path.joinpath(cat).iterdir():
+                if item.is_file():
+                    print(item.name)
+                    lst.append(item.suffix)
+            print(f"Extensions of {cat}: {set(lst)}\n")
+        else:
+            print(f"Category {cat} is empty\n")
+
+    if path.joinpath("other").exists():
+        lst = [item.suffix for item in path.joinpath("other").iterdir()]
+        print(f"Unknown extensions: {set(lst)}\n")
+    else:
+        print(f"Not found unknown extensions\n")
+
+
 def main():
     try:
         path = Path(sys.argv[1])
@@ -59,11 +79,12 @@ def main():
         return "No path to folder"
     if not path.exists():
         return f"Folder with path {path} doesn't exist"
-    print("ok")
     sort_folder(path)
     delete_emppty_folders(path)
     upack_archive(path)
+    print_result(path)
+    return "Ok"
 
 
 if __name__ == "__main__":
-    main()
+    print(main())
